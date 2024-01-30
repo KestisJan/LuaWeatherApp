@@ -189,8 +189,11 @@ elseif option == 3 then
             end
         end
     end
+elseif option == 4 then
+    -- Invoke the checkFavoriteCitiesForecast function from the database_operations module
+    weatherDataBase.checkFavoriteCitiesForecast(api)
 elseif option == 5 then
-    -- Add city to favorite list
+    -- Use the addCityToFavorites function from the database_operations module to handle the addition
     weatherDataBase.addCityToFavorites(api)
 else
     print("Invalid option")

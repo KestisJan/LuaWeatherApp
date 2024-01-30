@@ -1,10 +1,11 @@
 -- Load the SQLite library
 local sqllib = require('lsqlite3')
+local weatherUtils = require("weather_data_utils")
 
 -- Specify the path to the SQLite database file
 local Dbfilename = '/home/kestas/Sqlite/initial-db.sqlite'
 
--- createDataBase(info)
+-- database_operations.createDataBase(info)
 -- Creates or opens an SQLite database and stores information about a favorite location.
 local function createDataBase(info)
     -- Open the SQLite database
@@ -25,7 +26,7 @@ local function createDataBase(info)
         ]=]
 
         -- Create a favoritesTable with information from the provided 'info' table
-        local favoritesTable = createInfoTable(info)
+        local favoritesTable = weatherUtils.createInfoTable(info)
 
         -- Check if creating the favoritesTable was successful
         if favoritesTable then
@@ -50,7 +51,7 @@ local function createDataBase(info)
     end
 end
 
--- addCityToFavorites(api)
+-- database_operations.addCityToFavorites(api)
 -- Adds a city to the favorites list.
 function addCityToFavorites(api)
     print("Enter city name:")
@@ -69,7 +70,7 @@ function addCityToFavorites(api)
         local saveOption = io.read()
 
         if saveOption:lower() == "yes" then
-            local infoToSave = createInfoTable(info)
+            local infoToSave = weatherUtils.createInfoTable(info)
             local successSave, errorMessage = pcall(createDataBase, infoToSave)
 
             if successSave then
@@ -85,8 +86,67 @@ function addCityToFavorites(api)
     end
 end
 
+-- database_operations.checkFavoriteCitiesForecast(api)
+-- Checks the weather forecast for a city in the favorites list.
+function checkFavoriteCitiesForecast(api)
+    -- Open the SQLite database
+    local db = sqllib.open(Dbfilename)
+
+    if db then
+        -- Prepare a SELECT query to retrieve information about favorite cities (name, country, latitude, longitude)
+        local stmt = db:prepare("SELECT name, country, lat, lon FROM favourites")
+        local favoriteCities = {}
+        
+        -- Iterate through the query result and insert each city's details into the table
+        for row in stmt:nrows() do
+            table.insert(favoriteCities, row)
+        end
+        
+        -- Finalize the statement
+        stmt:finalize()
+
+        -- Display the list of favorite cities with their details to the user
+        print("Favorite Cities:")
+        for i, city in ipairs(favoriteCities) do
+            print(i .. ". " .. "Country: " .. city.country .. ", City: " .. city.name ..
+                    ", Latitude: " .. city.lat .. ", Longitude: " .. city.lon)
+        end
+
+        -- Prompt the user to enter the number of the city they want to check
+        print("Enter the number of the city to check its weather forecast:")
+        local cityNumber = tonumber(io.read())
+
+        if cityNumber and cityNumber >= 1 and cityNumber <= #favoriteCities then
+            local selectedCity = favoriteCities[cityNumber]
+
+            -- Retrieve the selected city's weather information using the Weather API
+            local successWeather, weatherData = pcall(api.getWeather, api, selectedCity.lat, selectedCity.lon)
+            
+            if successWeather and weatherData then
+                local info = { lat = selectedCity.lat, lon = selectedCity.lon, name = selectedCity.name,  country = selectedCity.country }
+                
+                -- Create a weather table based on the retrieved data
+                local weatherTable = weatherUtils.createWeatherTable(weatherData, info)
+                
+                -- Print the weather forecast for the selected city
+                weatherUtils.printWeatherForecast(weatherTable)
+            else
+                print("Failed to retrieve weather information for city:", selectedCity.name)
+            end
+        else
+            print("Invalid city number.")
+        end
+
+        -- Close the database connection
+        db:close()
+    else
+        print("Error opening the database.")
+    end
+end
+
 -- Return the module
 return {
     createDataBase = createDataBase,
     addCityToFavorites = addCityToFavorites,
+    checkFavoriteCitiesForecast = checkFavoriteCitiesForecast,
 }
