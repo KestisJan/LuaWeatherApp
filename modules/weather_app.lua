@@ -58,25 +58,23 @@ function WeatherAPI:getCoordinates(option, input)
     -- Constructing the full URL for the Geo API
     local fullUrl = self.geoApiUrl .. queryString
     local req = http_request.new_from_uri(fullUrl)
-
+    
     -- Using pcall to catch errors during the HTTP request
     local success, headers, stream = pcall(req.go, req)
     if not success then
         -- Returning an error table if the HTTP request fails
         return { error = "HTTP request failed."}
     end
-
+    
     local body = assert(stream:get_body_as_string())
-
-    -- Checking if the HTTP status is not 200 (OK)
-    if headers:get("status") ~= "200" then
+    -- -- Checking if the HTTP status is not 200 (OK)
+    if headers:get(":status") ~= "200" then
         -- Returning an error table with the error message
         return { error = body }
     end
 
     -- Devode the JSON response body into a Lua table
     local result = json.decode(body)
-
     -- Creating a placeholder variable for 'info'
     local info
 
@@ -99,9 +97,12 @@ function WeatherAPI:getCoordinates(option, input)
         }
     end
 
+
     -- Returning the created 'info' table
     return info
+
 end
+
 
 -- Get weather information based on geographical coordinates.
 -- @param lat (number) - The latitude coordinate.
@@ -109,6 +110,12 @@ end
 -- @return result (table) - The weather information as a Lua table.
 
 function WeatherAPI:getWeather(lat, lon)
+
+    -- Check if lat and lon are not nil
+    if not lat or not lon then
+        return { error = "Latitude and longitude must be provided." }
+    end
+
     -- Constructing the query string with necessary parameters
     local queryString = string.format("lat=%s&lon=%s&lang=%s&appid=%s&mode=%s", lat, lon, self.lang, self.apiKey, self.mode )
     local fullUrl = self.weatherApiUrl .. "?" .. queryString
@@ -140,3 +147,5 @@ function WeatherAPI:getWeather(lat, lon)
 end
 
 return WeatherAPI
+
+
