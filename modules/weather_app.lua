@@ -21,11 +21,12 @@ local WeatherAPI = {}
 -- @param lang (string) - The language for the weather data (optional, defaults to the one in the config)
 -- @param format (string) - The format for the weather data (optional, defaults to the one in the config)
 -- @return newObj (table) - The new WeatherAPI object
-function WeatherAPI:new(apiKey, lang, format)
+function WeatherAPI:new(apiKey, lang, format, units)
     local newObj = {
         apiKey = apiKey or config.apiKey, -- API key for OpenWeather
         lang = lang or config.lang, -- Language for weather data
         format = format or config.format, -- Format for weather data
+        units = units or "metric",
         geoApiUrl = "http://api.openweathermap.org/geo/1.0/", -- URL for the Geo API 
         weatherApiUrl = "https://api.openweathermap.org/data/2.5/weather", -- URL for the Weather API
     }
@@ -117,7 +118,7 @@ function WeatherAPI:getWeather(lat, lon)
     end
 
     -- Constructing the query string with necessary parameters
-    local queryString = string.format("lat=%s&lon=%s&lang=%s&appid=%s&mode=%s", lat, lon, self.lang, self.apiKey, self.mode )
+    local queryString = string.format("lat=%s&lon=%s&lang=%s&appid=%s&mode=%s&units=%s", lat, lon, self.lang, self.apiKey, self.mode, self.units )
     local fullUrl = self.weatherApiUrl .. "?" .. queryString
 
     -- Creating an HTTP request object
