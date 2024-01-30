@@ -62,3 +62,9 @@ function printWeatherForecast(weatherTable)
         print("An error occurred while processing the weather data: " .. result)
     end
 end
+
+return {
+    createInfoTable = createInfoTable,
+    createWeatherTable = createWeatherTable,
+    printWeatherForecast = printWeatherForecast,
+}
