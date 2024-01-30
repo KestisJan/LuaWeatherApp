@@ -1,5 +1,3 @@
-# LuaWeatherApp
- 
 # Lua Weather App
 
 Lua Weather App is a simple command-line application that allows users to retrieve weather forecasts based on city names, ZIP codes, or geographical coordinates. The application uses the OpenWeather API to fetch weather data and can store favorite cities along with their weather forecasts in an SQLite database.
