@@ -1,5 +1,3 @@
-local sqlite3 = require("luasql.sqlite3")
-
 
 -- Safely create an info table based on provided data.
 -- @param info (table) - The information data.
