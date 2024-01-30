@@ -18,14 +18,20 @@ local weatherUtils = require("weather_data_utils")
 -- Load the database_operations' module, which contains functions related to weather data and database operations.
 local weatherDataBase = require("database_operations")
 
+
 -- Create an instance of WeatherAPI using the internal configuration
 local api = WeatherAPI:new()
 
 -- Get user input
 print("Choose option:")
 print("1. Get weather forecast by city name")
-print("2. Get weather forecast by zipcode")
+print("2. Get weather forecast by ZIP code")
 print("3. Get weather forecast by coordinates")
+print("4. Check favorite cities forecast")
+print("5. Add city to favorite list")
+print("6. Remove city from favorite list")
+print("7. Exit application")
+
 local option = tonumber(io.read())
 
 
@@ -183,6 +189,9 @@ elseif option == 3 then
             end
         end
     end
+elseif option == 5 then
+    -- Add city to favorite list
+    weatherDataBase.addCityToFavorites(api)
 else
     print("Invalid option")
     return

@@ -1,19 +1,12 @@
--- Import the lsqlite3 library for SQLite database operations
+-- Load the SQLite library
 local sqllib = require('lsqlite3')
 
--- Create a namespace (table) to encapsulate database-related operations
-local DatabaseOperations = {}
+-- Specify the path to the SQLite database file
+local Dbfilename = '/home/kestas/Sqlite/initial-db.sqlite'
 
--- DatabaseOperations.create_db(info)
+-- createDataBase(info)
 -- Creates or opens an SQLite database and stores information about a favorite location.
-
-function DatabaseOperations.create_db(info)
-    -- Load the SQLite library
-    local sqllib = require('lsqlite3')
-
-    -- Specify the path to the SQLite database file
-    local Dbfilename = '/home/kestas/Sqlite/initial-db.sqlite'
-
+local function createDataBase(info)
     -- Open the SQLite database
     local db = sqllib.open(Dbfilename)
 
@@ -57,6 +50,43 @@ function DatabaseOperations.create_db(info)
     end
 end
 
+-- addCityToFavorites(api)
+-- Adds a city to the favorites list.
+function addCityToFavorites(api)
+    print("Enter city name:")
+    local cityName = io.read()
 
+    local success, info = pcall(api.getCoordinates, api, "city", cityName:gsub(" ", "%%20"))
 
-return DatabaseOperations
+    if success and info then
+        print("City Information:")
+        print("Name: " .. info.name)
+        print("Country: " .. info.country)
+        print("Latitude: " .. info.lat)
+        print("Longitude: " .. info.lon)
+
+        print("Do you want to add this city to your favorites? (yes/no)")
+        local saveOption = io.read()
+
+        if saveOption:lower() == "yes" then
+            local infoToSave = createInfoTable(info)
+            local successSave, errorMessage = pcall(createDataBase, infoToSave)
+
+            if successSave then
+                print("Information saved to favorites database.")
+            else
+                print("Error saving information to favorites database:", errorMessage)
+            end
+        else
+            print("Information not saved to favorites database.")
+        end
+    else
+        print("Failed to retrieve information for city:", cityName)
+    end
+end
+
+-- Return the module
+return {
+    createDataBase = createDataBase,
+    addCityToFavorites = addCityToFavorites,
+}
