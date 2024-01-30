@@ -25,7 +25,6 @@ print("2. Get weather forecast by zipcode")
 print("3. Get weather forecast by coordinates")
 local option = tonumber(io.read())
 
-local input
 
 local input
 
@@ -35,24 +34,30 @@ if option == 1 then
     input = io.read()
 
     local cities = {}
+    -- Split the input into individual city names
     for city in input:gmatch("([^,]+)") do
         table.insert(cities, city)
     end
 
     local count = #cities
 
+    -- Handle the case when no cities are provided
     if count == 0 then
         print("No cities provided. Exiting.")
         return
+    -- Handle the case when only one city is provided
     elseif count == 1 then
         local city = cities[1]
 
+        -- Attempt to retrieve coordinates for the city
         local success, info = pcall(api.getCoordinates, api, option, city:gsub(" ", "%%20"))
 
         if success and info then
+            -- If coordinates are obtained, attempt to get weather information
             local successWeather, weatherData = pcall(api.getWeather, api, info.lat, info.lon)
-         
+
             if successWeather and weatherData then
+                -- If weather information is obtained, create and print weather forecast
                 local weatherTable = weatherUtils.createWeatherTable(weatherData, info)
                 weatherUtils.printWeatherForecast(weatherTable)
             else
@@ -61,6 +66,7 @@ if option == 1 then
         else
             print("Failed to retrieve information for city:", city)
         end
+    -- Handle the case when multiple cities are provided
     else
         for _, city in ipairs(cities) do
             local success, info = pcall(api.getCoordinates, api, option, city:gsub(" ", "%%20"))
@@ -76,6 +82,43 @@ if option == 1 then
                 end
             else
                 print("Failed to retrieve information for city:", city)
+            end
+        end
+    end
+-- Check if the user chose to get weather forecast by ZIP code
+elseif option == 2 then
+    option = "zipcode"
+    print("Enter ZIP code(s) and country code(s) separated by commas:")
+    input = io.read()
+
+    local zipcodes = {}
+    -- Split the input into individual ZIP code and country code pairs
+    for zip, country in input:gmatch("([^,]+),(%u+)") do
+        table.insert(zipcodes, { zip = zip, country = country })
+    end
+
+    local count = #zipcodes
+
+    -- Handle the case when no ZIP codes are provided
+    if count == 0 then
+        print("No ZIP codes provided. Exiting.")
+        return
+    -- Handle the case when multiple ZIP codes are provided
+    else
+        for _, zipcode in ipairs(zipcodes) do
+            local success, info = pcall(api.getCoordinates, api, option, zipcode.zip .. "," .. zipcode.country)
+
+            if success and info then
+                local successWeather, weatherData = pcall(api.getWeather, api, info.lat, info.lon)
+
+                if successWeather and weatherData then
+                    local weatherTable = weatherUtils.createWeatherTable(weatherData, info)
+                    weatherUtils.printWeatherForecast(weatherTable)
+                else
+                    print("Failed to retrieve weather information for ZIP code:", zipcode.zip)
+                end
+            else
+                print("Failed to retrieve information for ZIP code:", zipcode.zip)
             end
         end
     end
