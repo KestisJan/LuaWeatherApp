@@ -122,4 +122,65 @@ elseif option == 2 then
             end
         end
     end
+elseif option == 3 then
+    option = "coordinates"
+    print("Enter latitude and longitude(s) separated by commas:")
+    input = io.read()
+
+    -- Parse user input for coordinates
+    local coordinates = {}
+    for lat, lon in input:gmatch("([^,]+),([^,]+)") do
+        table.insert(coordinates, { lat = lat, lon = lon })
+    end
+
+    local count = #coordinates
+
+    if count == 0 then
+        print("No coordinates provided. Exiting.")
+        return
+    elseif count == 1 then
+        -- Single set of coordinates
+        local coord = coordinates[1]
+
+        -- Attempt to fetch weather information for the given coordinates
+        local successWeather, weatherData = pcall(api.getWeather, api, coord.lat, coord.lon)
+
+        if not successWeather or not weatherData then
+            print("Failed to retrieve weather information for coordinates:", coord.lat, coord.lon)
+            return
+        end
+
+        -- Create info table for printing and printing weather forecast
+        local info = {
+            lat = coord.lat,
+            lon = coord.lon,
+            name = weatherData.name,
+            country = weatherData.sys.country
+        }
+        local weatherTable = weatherUtils.createWeatherTable(weatherData, info)
+        weatherUtils.printWeatherForecast(weatherTable)
+    else
+        -- Multiple sets of coordinates
+        for _, coord in ipairs(coordinates) do
+            -- Attempt to fetch weather information for each set of coordinates
+            local successWeather, weatherData = pcall(api.getWeather, api, coord.lat, coord.lon)
+
+            if successWeather and weatherData then
+                -- Create info table for printing and printing weather forecast
+                local info = {
+                    lat = coord.lat,
+                    lon = coord.lon,
+                    name = weatherData.name,
+                    country = weatherData.sys.country
+                }
+                local weatherTable = weatherUtils.createWeatherTable(weatherData, info)
+                weatherUtils.printWeatherForecast(weatherTable)
+            else
+                print("Failed to retrieve weather information for coordinates:", coord.lat, coord.lon)
+            end
+        end
+    end
+else
+    print("Invalid option")
+    return
 end
