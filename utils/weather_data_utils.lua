@@ -12,6 +12,7 @@ function createInfoTable(info)
     end
 end
 
+
 -- Safely create a weather table based on provided weather data and info.
 -- @param weatherData (table) - The weather data.
 -- @param info (table) - The information data.

@@ -1,7 +1,6 @@
 -- config.lua
 
 -- Load configuration from environment variables
-
 return {
     -- OpenWeather API key for accessing weather data
     apiKey = os.getenv("WEATHER_API_KEY"),
