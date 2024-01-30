@@ -46,14 +46,26 @@ end
 function printWeatherForecast(weatherTable)
     local success, result = pcall(function()
         if type(weatherTable) == "table" then
-            print("Description: " .. weatherTable.description)
-            print("Temperature: " .. weatherTable.temperature .. " °C")
-            print("Feels Like: " .. weatherTable.feels_like .. " °C")
-            print("Min Temperature: " .. weatherTable.temp_min .. " °C")
-            print("Max Temperature: " .. weatherTable.temp_max .. " °C")
-            print("Pressure: " .. (weatherTable.pressure or "N/A") .. " hPa")
-            print("Humidity: " .. weatherTable.humidity .. " %")
-            print() -- Empty line between weather forecasts
+            print("Weather Forecast, date: " .. os.date("%Y-%m-%d", weatherTable.timestamp))
+    
+            if weatherTable.name then
+                print("Location: " .. weatherTable.name .. ", " .. weatherTable.country)
+                print("Coordinates: " .. weatherTable.lat .. ", " .. weatherTable.lon)
+            end
+    
+            if weatherTable.timestamp then
+                print("Time: " .. os.date("%H:%M:%S", weatherTable.timestamp))
+                print("Description: " .. weatherTable.description)
+                print("Temperature: " .. weatherTable.temperature .. " °C")
+                print("Feels Like: " .. weatherTable.feels_like .. " °C")
+                print("Min Temperature: " .. weatherTable.temp_min .. " °C")
+                print("Max Temperature: " .. weatherTable.temp_max .. " °C")
+                print("Pressure: " .. (weatherTable.pressure or "N/A") .. " hPa")
+                print("Humidity: " .. weatherTable.humidity .. " %")
+                print() -- Empty line between weather forecasts
+            else
+                print("Failed to fetch weather data")
+            end
         else
             print("Failed to fetch weather data")
         end
