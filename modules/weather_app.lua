@@ -77,8 +77,30 @@ function WeatherAPI:getCoordinates(option, input)
     -- Devode the JSON response body into a Lua table
     local result = json.decode(body)
 
-    -- Returning result
-    return result
+    -- Creating a placeholder variable for 'info'
+    local info
+
+    -- Checking the provided option type
+    if option == "city" then
+        -- For 'city' option, extracting geographical information from the first result in the JSON response array
+        info = {
+            lat = result[1].lat,
+            lon = result[1].lon,
+            name = result[1].name,
+            country = result[1].country
+        }
+    elseif option == "zipcode" then
+        -- For 'zipcode' option, directly extracting geographical information from the result JSON object
+        info = {
+            lat = result.lat,
+            lon = result.lon,
+            name = result.name,
+            country = result.country,
+        }
+    end
+
+    -- Returning the created 'info' table
+    return info
 end
 
 -- Get weather information based on geographical coordinates.
