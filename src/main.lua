@@ -15,6 +15,9 @@ local WeatherAPI = require("weather_app")
 -- Load the weather data utility module
 local weatherUtils = require("weather_data_utils")
 
+-- Load the database_operations' module, which contains functions related to weather data and database operations.
+local weatherDataBase = require("database_operations")
+
 -- Create an instance of WeatherAPI using the internal configuration
 local api = WeatherAPI:new()
 

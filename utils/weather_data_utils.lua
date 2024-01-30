@@ -1,4 +1,4 @@
-
+local sqlite3 = require("luasql.sqlite3")
 
 
 -- Safely create an info table based on provided data.
@@ -75,6 +75,7 @@ function printWeatherForecast(weatherTable)
         print("An error occurred while processing the weather data: " .. result)
     end
 end
+
 
 return {
     createInfoTable = createInfoTable,
