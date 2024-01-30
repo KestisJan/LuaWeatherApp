@@ -144,9 +144,120 @@ function checkFavoriteCitiesForecast(api)
     end
 end
 
+
+-- Function to interactively remove a city from the favorites list via user input
+function removeCityFromFavoritesMenu(db)
+    -- Load the SQLite library
+    local sqllib = require('lsqlite3')
+
+    -- Specify the path to the SQLite database file
+    local Dbfilename = '/home/kestas/Sqlite/initial-db.sqlite'
+
+    -- Open the SQLite database
+    local db = sqllib.open(Dbfilename)
+
+    if db then
+        -- Retrieve the list of favorite cities from the 'favourites' table
+        local stmt = db:prepare("SELECT name, country, lat, lon FROM favourites")
+        local favoriteCities = {}
+
+        -- Populate the favoriteCities table with data from the database
+        for row in stmt:nrows() do
+            table.insert(favoriteCities, row)
+        end
+
+        stmt:finalize()
+
+        -- Display the list of favorite cities to the user
+        print("Favorite Cities:")
+        for i, city in ipairs(favoriteCities) do
+            print(i .. ". " .. "Country: " .. city.country .. ", City: " .. city.name .. ", Latitude: " .. city.lat .. ", Longitude: " .. city.lon)
+        end
+
+        -- Prompt the user to enter the number of the city to remove or 'q' to quit
+        print("Enter the number of the city to remove from favorites, or 'q' to quit:")
+        local userInput = io.read()
+
+        -- Check if the user wants to quit
+        if userInput == 'q' then
+            return
+        end
+
+        local cityNumber = tonumber(userInput)
+
+        -- Check if the entered city number is valid
+        if cityNumber and cityNumber >= 1 and cityNumber <= #favoriteCities then
+            local selectedCity = favoriteCities[cityNumber]
+
+            -- Prompt for deletion confirmation
+            print("Do you really want to delete '" .. selectedCity.name .. "' from favorites? (yes/no)")
+            local confirmation = io.read():lower()
+
+            -- Check user confirmation for deletion
+            if confirmation == "yes" then
+                -- Attempt to remove the city from favorites
+                local successRemove = removeCityFromFavorites(db, selectedCity.name)
+
+                -- Check if the removal was successful and print the corresponding message
+                if successRemove then
+                    print("City '" .. selectedCity.name .. "' removed from favorites.")
+                else
+                    print("Failed to remove city '" .. selectedCity.name .. "' from favorites.")
+                end
+            else
+                print("City not removed.")
+            end
+        else
+            print("Invalid city number.")
+        end
+
+        -- Close the database connection
+        db:close()
+    else
+        print("Error opening the database.")
+    end
+end
+
+
+-- Function to remove a city from the favorites list in the SQLite database
+function removeCityFromFavorites(db, cityName)
+    -- Prepare the SQL statement to delete the city by name
+    local deleteStatement, errmsg = db:prepare("DELETE FROM favourites WHERE name = ?")
+
+    if deleteStatement then
+        -- Bind the city name parameter to the prepared statement
+        deleteStatement:bind_values(cityName)
+
+        -- Use pcall to catch any potential error during the execution of the SQL statement
+        local success, result = pcall(deleteStatement.step, deleteStatement)
+
+        -- Finalize the prepared statement
+        deleteStatement:finalize()
+
+        -- Check if the execution was successful and the result is as expected
+        if success and (result == sqllib.DONE or result == sqllib.ROW) then
+            return true  -- Indicate success
+        else
+            -- If there was an error or an unexpected result, print an error message
+            local errmsg = success and "Execution successful, but unexpected result" or errmsg
+            print("SQLite Error:", errmsg)
+            return false  -- Indicate failure
+        end
+    else
+        -- If there was an error preparing the statement, print an error message
+        print("SQLite Error:", errmsg)
+        return false  -- Indicate failure
+    end
+end
+
+
+
+
 -- Return the module
 return {
     createDataBase = createDataBase,
     addCityToFavorites = addCityToFavorites,
     checkFavoriteCitiesForecast = checkFavoriteCitiesForecast,
+    removeCityFromFavoritesMenu = removeCityFromFavoritesMenu,
+    removeCityFromFavorites = removeCityFromFavorites,
 }
